@@ -1,0 +1,34 @@
+{
+  "entities": {
+    "students": {
+      "title": "Students",
+      "description": "Student roster records",
+      "properties": {
+        "name": { "type": "string" },
+        "rollNo": { "type": "string" },
+        "gradeClass": { "type": "string" },
+        "parentPhone": { "type": "string" },
+        "parentEmail": { "type": "string" },
+        "batchTime": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "attendance": {
+      "title": "Attendance Logs",
+      "description": "Attendance check-in and check-out logs",
+      "properties": {
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "rollNo": { "type": "string" },
+        "gradeClass": { "type": "string" },
+        "type": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["studentId", "studentName"]
+    }
+  }
+}

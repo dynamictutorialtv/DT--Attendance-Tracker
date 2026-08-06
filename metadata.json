@@ -1,0 +1,6 @@
+{
+  "name": "Dynamic Tutorial Attendance System",
+  "description": "Mobile and tablet optimized student attendance tracking, check-in/out kiosk, password-protected admin portal, and monthly reports for teachers and parents.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
