@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { Header } from './components/Header';
 import { Kiosk } from './components/Kiosk';
 import { AdminPanel } from './components/AdminPanel';
@@ -128,6 +129,7 @@ export default function App() {
           </button>
         </div>
       </div>
+      <Analytics />
     </div>
   );
 }
