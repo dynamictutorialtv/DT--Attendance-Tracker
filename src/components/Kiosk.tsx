@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { Student, AttendanceRecord, AttendanceType } from '../types';
 import { recordAttendance } from '../lib/storage';
-import { sortStudents } from '../lib/classUtils';
+import { sortStudents, getClassLevelNumber } from '../lib/classUtils';
 import confetti from 'canvas-confetti';
 import {
   UserCheck,
   LogOut,
-  Search,
   CheckCircle2,
   Clock,
   Sparkles,
@@ -15,6 +14,7 @@ import {
   History,
   CalendarCheck2,
   Check,
+  Filter,
 } from 'lucide-react';
 
 interface KioskProps {
@@ -26,31 +26,31 @@ export const Kiosk: React.FC<KioskProps> = ({ students, attendance }) => {
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [selectedType, setSelectedType] = useState<AttendanceType | null>(null);
   const [notes, setNotes] = useState<string>('');
-  const [searchQuery, setSearchQuery] = useState<string>('');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Extract unique grades for filtering
+  // Extract unique grades for filtering (ordered strictly from Junior to Higher classes)
   const availableGrades = useMemo(() => {
     const set = new Set<string>();
     students.forEach((s) => {
       if (s.gradeClass) set.add(s.gradeClass);
     });
-    return Array.from(set).sort();
+    return Array.from(set).sort((a, b) => {
+      const levelA = getClassLevelNumber(a);
+      const levelB = getClassLevelNumber(b);
+      if (levelA !== levelB) return levelA - levelB;
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    });
   }, [students]);
 
-  // Filter & Order students based on search query and grade (Junior classes top, or alphabetical when grade selected)
+  // Filter & Order students based on grade (Junior classes top, or alphabetical when grade selected)
   const filteredStudents = useMemo(() => {
     const matching = students.filter((s) => {
-      const matchesSearch =
-        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        s.rollNo.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesGrade = gradeFilter === 'all' || s.gradeClass === gradeFilter;
-      return matchesSearch && matchesGrade;
+      return gradeFilter === 'all' || s.gradeClass === gradeFilter;
     });
     return sortStudents(matching, gradeFilter);
-  }, [students, searchQuery, gradeFilter]);
+  }, [students, gradeFilter]);
 
   // Currently selected student details
   const selectedStudent = useMemo(() => {
@@ -176,49 +176,30 @@ export const Kiosk: React.FC<KioskProps> = ({ students, attendance }) => {
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-slate-900">Select Student Name</h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Choose your name from the dropdown list or use quick search.
+              Filter by class/grade and select your name from the dropdown list below.
             </p>
           </div>
         </div>
 
-        {/* Dropdown Filters for Fast Selection */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {/* Grade Filter */}
-          <div className="sm:col-span-1">
-            <label className="block text-xs font-bold uppercase text-slate-500 tracking-wider mb-1">
-              Filter Class/Grade
-            </label>
+        {/* Grade Filter */}
+        <div>
+          <label htmlFor="student-grade-filter" className="block text-xs font-bold uppercase text-slate-500 tracking-wider mb-1">
+            Filter Class / Grade
+          </label>
+          <div className="relative">
             <select
               id="student-grade-filter"
               value={gradeFilter}
               onChange={(e) => setGradeFilter(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none"
+              className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-sky-500 focus:outline-none cursor-pointer"
             >
-              <option value="all">All Classes & Batches</option>
+              <option value="all">All Classes (Junior to Senior)</option>
               {availableGrades.map((g) => (
                 <option key={g} value={g}>
                   {g}
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* Quick Search */}
-          <div className="sm:col-span-2 relative">
-            <label className="block text-xs font-bold uppercase text-slate-500 tracking-wider mb-1">
-              Search Name or Roll No
-            </label>
-            <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-              <input
-                id="student-search-input"
-                type="text"
-                placeholder="Type student name or ID..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:ring-2 focus:ring-sky-500 focus:outline-none placeholder:text-slate-400"
-              />
-            </div>
           </div>
         </div>
 

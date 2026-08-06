@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Student, AttendanceRecord } from '../types';
 import { computeMonthlySummary } from '../lib/storage';
 import { generateParentPDFReport, generateTeacherClassPDFReport } from '../lib/pdfGenerator';
+import { getClassLevelNumber } from '../lib/classUtils';
 import {
   FileText,
   Download,
@@ -72,13 +73,18 @@ export const Reports: React.FC<ReportsProps> = ({ students, attendance }) => {
     });
   }, [attendance, selectedStudentId, selectedYear, selectedMonth]);
 
-  // Unique Classes for Teacher View
+  // Unique Classes for Teacher View (ordered strictly from Junior to Higher classes)
   const availableGrades = useMemo(() => {
     const set = new Set<string>();
     students.forEach((s) => {
       if (s.gradeClass) set.add(s.gradeClass);
     });
-    return Array.from(set).sort();
+    return Array.from(set).sort((a, b) => {
+      const levelA = getClassLevelNumber(a);
+      const levelB = getClassLevelNumber(b);
+      if (levelA !== levelB) return levelA - levelB;
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    });
   }, [students]);
 
   // Teacher View Filtered Summaries
